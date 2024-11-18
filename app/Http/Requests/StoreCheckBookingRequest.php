@@ -22,10 +22,8 @@ class StoreCheckBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            
-
                 'booking_trx_id' => ['required', 'string', 'max:255'],
-                'phone' => ['required', 'string', 'max:255'],
+                'phone' => ['required', 'string', 'max:255']
         ];
     }
 }

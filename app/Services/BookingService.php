@@ -137,7 +137,8 @@ class BookingService
         public function getMyBookingDetails(array $validated)
         {
             return $this->bookingRepository->findByTrxIdAndPhoneNumber($validated['booking_trx_id'],
-            $validated ['phone']);
+            $validated['phone']);
+            
         }
 
 

@@ -31,4 +31,7 @@ class FrontController extends Controller
     public function category(Category $category){
     return view('front.category', compact('category'));
     }
+
+    
+    
 }

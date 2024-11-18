@@ -5,6 +5,7 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\StoreCheckBookingRequest;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\BookingTransaction;
+use App\Models\WorkshopParticipant;
 use App\Models\Workshop;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
@@ -65,10 +66,11 @@ class BookingController extends Controller
             ()]);
         }
     }
+
     public function bookingFinished(BookingTransaction $bookingTransaction)
     {
 
-    return view( 'booking. booking_finished', compact('bookingTransaction'));
+    return view('booking.booking_finished', compact('bookingTransaction'));
     }
 
     public function checkBooking(){
@@ -78,14 +80,34 @@ class BookingController extends Controller
     public function checkBookingDetails(StoreCheckBookingRequest $request)
     {
         $validated = $request->validated();
-
         $myBookingDetails = $this->bookingService->getMyBookingDetails($validated);
-
         if ($myBookingDetails) {
-        return view('booking.my_booking_details', compact('myBookingDetails'));
+            $participants = WorkshopParticipant::where('booking_transaction_id', $myBookingDetails->id)->get();
+            $workshop = $myBookingDetails->workshop;
+
+            // Mengambil jumlah (quantity) yang dipesan
+            $quantity = isset($orderData['quantity']) ? $orderData['quantity'] : 1;
+
+            // Menghitung subTotalAmount
+            $subTotalAmount = $workshop->price * $quantity;
+
+            // Mengambil rate pajak dari workshop, jika ada
+            $taxRate = $workshop->tax_rate ?? 0.11; // Default tax 11% jika tidak ada di workshop
+            $totalTax = $subTotalAmount * $taxRate;
+
+            // Menghitung totalAmount
+            $totalAmount = $subTotalAmount + $totalTax;
+
+            // Menyimpan hasil perhitungan ke dalam $orderData
+            $orderData['sub_total_amount'] = $subTotalAmount;
+            $orderData['total_tax'] = $totalTax;
+            $orderData['total_amount'] = $totalAmount;
+
+            
+            return view('booking.my_booking_details', compact('myBookingDetails','participants','workshop','orderData'));
         }
-        
         return redirect()->route('front.check_booking')->withErrors(['error' => 'Transaction not found']);
+       
     }
 
 }
